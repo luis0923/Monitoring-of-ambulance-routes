@@ -13,13 +13,11 @@ public:
 
     int randomAccident()
     {
-        std::mt19937 rng(random_device{}());
+        std::mt19937 rng(std::random_device{}());
         std::uniform_int_distribution<int> dist(1, 20);
         return dist(rng);
     }
-    
-    
-    
+ 
     void matrixGenerator()
     {
         for(int i = 0; i <= dataSet.amountVertex; i++)
@@ -41,7 +39,7 @@ public:
             pondMatrix[e.from][e.to] = e.weight;
         }
     };
-    void floydWarshall()
+    void floydWarshall()//Define a matriz ponderada
     {
         for(int k = 1; k <= dataSet.amountVertex; k++)
         {
@@ -57,6 +55,7 @@ public:
             }
         }
     };
+
     void printMatrix()
     {
         for(int i = 1; i <= dataSet.amountVertex; i++)
@@ -76,6 +75,7 @@ public:
             std::cout << "\n";
         }
     };
+
     int baseAmbulanceDefiner() //Inutil no Dijkstra, talvez sirva para o Bellman-Ford
     {
         long long routeSum = LLONG_MAX;
@@ -98,34 +98,37 @@ public:
         return bestVertex;
     }
     
-    void ambulanceObservatory()
+    void ambulanceObservatory()// vai printar quais das ambulancias que estão circulando, estão mais próximas do acidente
     {
         
-        uniform_int_distribution<int> dist(1, 20);
+        std::uniform_int_distribution<int> dist(1, 20);
+        std::vector<int> ambulanceFleet;
         int accident = randomAccident();
 
-        vector<int> ambulanceFleet;
         for(int i = 0; i < 5; i++)
         {
-            ambulanceFleet.push_back(randomAccident());
+            ambulanceFleet.push_back(randomAccident()); //Valores aleatorios de 1 a 20 (quantidade máxima de vertices)
         }
 
-        int bestAmbulance = -1;
-        int shortestDistance = INF;
-
-        for(int i = 0; i < (int)ambulanceFleet.size(); i++)
+        int BestDistance = INF;
+        int nearestAmbulance = 0;
+        int distanceActual = 0;
+        for(int k = 0; k < ambulanceFleet.size(); k++)
         {
-            int distance = pondMatrix[ambulanceFleet[i]][accident];
-            if(distance < shortestDistance)
+            distanceActual = pondMatrix[ambulanceFleet[k]][accident];
+            if(BestDistance > distanceActual)
             {
-                shortestDistance = distance;
-                bestAmbulance = i;
+                BestDistance = distanceActual;
+                nearestAmbulance = ambulanceFleet[k];
+                
             }
         }
-        cout << "Acidente no setor: " << accident << "\n";
-        cout << "Ambulâncias nos setores: ";
-        for(int s : ambulanceFleet) cout << s << " ";
-        cout << "\n";
-        cout << "Ambulância " << bestAmbulance + 1 << " despachada do setor " << ambulanceFleet[bestAmbulance] << " | Distância: " << shortestDistance << "\n";
+        std::cout << "Nossas ambulancias estão localizadas: ";
+        for(int j = 0; j < ambulanceFleet.size(); j++)
+        {
+            std::cout << ambulanceFleet[j] << " ";
+        }
+        std::cout << "\n"<< "A ambulancia mais proxima do acidente localizado no vertice " << accident <<" eh: " << nearestAmbulance << "\n";
+
     }
 };

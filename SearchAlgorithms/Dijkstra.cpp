@@ -8,7 +8,7 @@
 
 using namespace std;
 
-class Dijkstra
+class Dijkstra//Algoritmoo de busca minima
 {
     
     public:
@@ -32,6 +32,7 @@ class Dijkstra
             e.weight
             });
         }
+
         //baseAmbulance = floydwarshall.baseAmbulanceDefiner();
 
         ofstream file("edges.csv");
@@ -146,6 +147,7 @@ int main()
     //cout << "Distancia usando averageTimetoRescue: " << dijkstra.bestRouteOfBaseToAccident(dijkstra.averageTimetoRescue(), 7) << "\n" << "Vertice: " << 7 << "\n";
 
     floydwarshall.ambulanceObservatory();
+
     //}
 
     //dijkstra.averageTimetoRescue();
