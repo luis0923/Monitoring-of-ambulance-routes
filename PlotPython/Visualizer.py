@@ -1,75 +1,95 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-import matplotlib.animation as animation
+from matplotlib.animation import FuncAnimation
 import networkx as nx
 import os
 
-class save:
+ #CRIAÇÃO DO AMBIENTE
+plt.style.use("dark_background")
+fig, ax = plt.subplots(figsize =(12, 8))
 
-    base = os.path.dirname(os.path.abspath(__file__))
-    csv_path = os.path.join(base, "..", "SearchAlgorithms", "PathOfEdges.csv")
-    edges_path = os.path.join(base, "..", "SearchAlgorithms", "edges.csv")
+fig.patch.set_facecolor("#0d1117")
+ax.set_facecolor("#0d1117")
+for spine in ax.spines.values():
+    spine.set_visible(False)
 
-    path_df = pd.read_csv(csv_path)
-    path = path_df["vertex"].tolist()
+#EXPORTAÇÃO DOS CAMINHOS
 
-    edges_df = pd.read_csv(edges_path)
-    edge_lookup = {(int(r["from"]), int(r["to"])): int(r["weight"]) for _, r in edges_df.iterrows()}
+base = os.path.dirname(os.path.abspath(__file__))
+csv_path = os.path.join(base, "..", "SearchAlgorithms", "PathOfEdges.csv")
+edges_path = os.path.join(base, "..", "SearchAlgorithms", "edges.csv")
 
-    G = nx.DiGraph()
-    path_edges = list(zip(path[:-1], path[1:]))
-    for u, v in path_edges:
-        w = edge_lookup.get((u, v), 0)
-        G.add_edge(u, v, weight=w)
+path_df = pd.read_csv(csv_path)
+path = path_df["vertex"].tolist()
 
-    pos = nx.kamada_kawai_layout(G)
-    fig, ax = plt.subplots(figsize=(10, 7))
+edges_df = pd.read_csv(edges_path)
+edge_lookup = {(int(r["from"]), int(r["to"])): int(r["weight"]) for _, r in edges_df.iterrows()}
 
-    def update(frame):
-        ax.clear()
+Digraph = nx.DiGraph()
 
-        # Nós e arestas já visitados até o frame atual
-        visited_nodes = path[:frame + 1]
-        visited_edges = path_edges[:frame]
+for(u, v), w in edge_lookup.items():
+    Digraph.add_edge(u, v, weight = w)
 
-        # Cores dos nós
-        node_colors = ["red" if n in visited_nodes else "#cccccc" for n in G.nodes()]
+path = path_df["vertex"].tolist()
+path_edges = list(zip(path[:-1], path[1:]))
 
-        # Cores das arestas
-        edge_colors = ["red" if e in visited_edges else "#eeeeee" for e in G.edges()]
+pos = nx.kamada_kawai_layout(Digraph, weight=None)
 
-        nx.draw(G, pos, ax=ax,
-                with_labels=True,
-                node_color=node_colors,
-                edge_color=edge_colors,
-                node_size=700,
-                font_color="white",
-                font_weight="bold",
-                arrows=True,
-                arrowsize=20,
-                connectionstyle="arc3,rad=0.1")
+COLOR = {
+"bg":       "#0d1117",   # fundo
+"node":     "#1f2937",   # nó normal
+"edge":     "#374151",   # aresta normal
+"path_node":"#00d4aa",   # nó no caminho
+"path_edge":"#00d4aa",   # aresta no caminho
+"current":  "#f97316",   # nó atual (animação)
+"text":     "#e6edf3",   # labels
+"muted":    "#6b7280",   # labels secundários
+}
 
-        # Destaca o nó atual com borda
-        nx.draw_networkx_nodes(G, pos, ax=ax,
-                            nodelist=[path[frame]],
-                            node_color="orange",
-                            node_size=900)
-        nx.draw_networkx_labels(G, pos, ax=ax,
-                                labels={path[frame]: path[frame]},
-                                font_color="white",
-                                font_weight="bold")
+path_set = set(path)
 
-        labels = nx.get_edge_attributes(G, "weight")
-        nx.draw_networkx_edge_labels(G, pos, edge_labels=labels, font_size=9, ax=ax)
+node_colors = [
+COLOR["path_node"] if n in path_set
+else COLOR["node"]
+for n in Digraph.nodes()
+]
 
-        ax.set_title(f"Passo {frame + 1}/{len(path)} — Vértice atual: {path[frame]}")
+def draw_frame(frame):
+    ax.clear()
+    ax.set_facecolor(COLOR["bg"])
 
-    ani = animation.FuncAnimation(
-        fig,
-        update,
-        frames=len(path),
-        interval=800,    # milissegundos entre cada passo
-        repeat=True
-    )
+    visited = set(path[:frame + 1])
+    visited_edges = set(path_edges[:frame])
 
-    plt.show()
+
+    n_colors = [COLOR["current"] if n == path[frame]
+                else COLOR["path_node"] if n in visited
+                else COLOR["node"] for n in Digraph.nodes()]
+    e_colors = [COLOR["path_edge"] if e in visited_edges
+                else COLOR["edge"] for e in Digraph.edges()]
+    e_widths = [2.5 if e in visited_edges else 0.8
+                for e in Digraph.edges()]
+    
+    nx.draw(Digraph, pos, ax=ax, node_color=n_colors,
+    edge_color=e_colors, width=e_widths,
+    with_labels=True, font_color=COLOR["text"],
+    node_size=700, font_size=9, arrows=True,
+    arrowsize=15, connectionstyle="arc3,rad=0.1")
+
+
+    path_labels = {e: edge_lookup[e] for e in visited_edges
+                if e in edge_lookup}
+    nx.draw_networkx_edge_labels(Digraph, pos, path_labels,
+        font_color=COLOR["path_edge"], font_size=8, ax=ax)
+
+    ax.set_title(f"vértice atual: {path[frame]}",
+                color=COLOR["text"], fontsize=12)
+
+ani = FuncAnimation(fig, draw_frame,
+    frames=len(path), interval=900, repeat=True)
+
+plt.tight_layout()
+plt.show()
+
+
+
