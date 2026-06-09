@@ -1,3 +1,5 @@
+#pragma once
+
 #include "../MatrixGenerator/DataSetReader.hpp"
 #include <climits>
 #include <random>
@@ -123,7 +125,7 @@ public:
                 
             }
         }
-        std::cout << "Nossas ambulancias estão localizadas: ";
+        std::cout << "Nossas ambulancias estao localizadas: ";
         for(int j = 0; j < ambulanceFleet.size(); j++)
         {
             std::cout << ambulanceFleet[j] << " ";
