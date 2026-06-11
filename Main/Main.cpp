@@ -10,30 +10,36 @@
 #include <climits>
 
 FloydWarshall floydwarshall;
+Dijkstra dijkstra;
+BellmanFord bellmanford;
+const int baseDijkstra = dijkstra.averageTimetoRescue();
+const int baseBellmanFord = floydwarshall.baseAmbulanceDefiner();
 using namespace std;
 
 int main(int argc, char* argv[])
 {
-    if(argc < 2)
+
+
+    if(argc < 3)
     {
-        cerr << "Uso: algoritmo <dijkstra|bellmanford|floydwarshall> <origem> <destino>\n";
+        cerr << "Uso: algoritmo <dijkstra|bellmanford|floydwarshall> <destino>\n";
         return 1;
     }
     string algorithm = argv[1];
-    //int origem = atoi(argv[2]);
-   //int destino = atoi(argv[3]);
+    int destiny = stoi(argv[2]);
+
 
     vector<int> path;
 
 
     if (algorithm == "dijkstra" || algorithm == "1")
     {
-        Dijkstra dijkstra;
-        int base = dijkstra.averageTimetoRescue();
-        cout << "Base escolhida: " << base << "\n"; 
-        cout << "Destino: 10\n"; 
+        
 
-        int dist = dijkstra.bestRouteOfBaseToAccident(dijkstra.averageTimetoRescue(), 10);
+        cout << "Base escolhida: " << baseDijkstra << "\n"; 
+        cout << "Destino: " << destiny <<  "\n"; 
+
+        int dist = dijkstra.bestRouteOfBaseToAccident(baseDijkstra, destiny);
 
         if(dist == INT_MAX)
         {
@@ -46,15 +52,16 @@ int main(int argc, char* argv[])
     }
     else if (algorithm == "bellmanford" || algorithm == "2")
     {
-        BellmanFord bellmanford;
-        int dist = bellmanford.bestRouteOfBaseToAccident(floydwarshall.baseAmbulanceDefiner(), 19);
+        
+        int dist = bellmanford.bestRouteOfBaseToAccident(baseBellmanFord, destiny);
         if(dist == -1)
         {
             cerr << "Erro no BellmaanFord. \n";
         }
         else
         {
-        cout << "A menor distancia é: " << dist << "\n"; 
+        cout << "A base do BellmanFord EH: " << baseBellmanFord << "\n";
+        cout << "A menor distancia EH: " << dist << "\n"; 
         }
     }
     else if (algorithm == "floydwarshall" || algorithm == "3")
@@ -77,6 +84,6 @@ int main(int argc, char* argv[])
     }
 
 
-    cout <<"\nAlgoritmo " << algorithm << " concluído.\n";
+    cout <<"\nAlgoritmo " << algorithm << " concluido.\n";
     return 0;
 }

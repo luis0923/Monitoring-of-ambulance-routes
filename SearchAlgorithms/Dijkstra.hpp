@@ -26,7 +26,7 @@ class Dijkstra//Algoritmoo de busca minima
 
         for(const auto& e : dataset.edges)
         {
-            AdjacencyList[e.from].push_back(e);
+            AdjacencyList[e.from].push_back(e); //Definimos como estrutura de armazenamento a AdjacencyList, pelo desempenho
 
             ReverseAdjacencyList[e.to].push_back({
             e.to,
@@ -34,8 +34,6 @@ class Dijkstra//Algoritmoo de busca minima
             e.weight
             });
         }
-
-        //baseAmbulance = floydwarshall.baseAmbulanceDefiner();
 
         ofstream file("edges.csv");
 
@@ -47,27 +45,36 @@ class Dijkstra//Algoritmoo de busca minima
         
     };
 
-    int bestRouteOfBaseToAccident(int base, int accident) //USando Dijkstra calcula a melhor rota da base até o acidente
-    {
-        long long visitados = 0;
-        priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> dijkstra;
 
-        vector<int> dist(dataset.amountVertex + 1, INT_MAX);
+    //Dijkstra
+    int bestRouteOfBaseToAccident(int base, int accident) //Utilizamos de Dijkstra para calcular a melhor rota da base até o acidente
+    {
+        //Removi a variavel visitados, pq nãoestou compparando com o bidirecional mais
+        priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> queue; //Troquei o nome antigo, tinha deixado dijkstra mas fica meio confuso
+
+
+        //A prioriryQueue ela é organizada assim: (Tipo de elemento, o alocador interno, comparador) nesa ordem
+        //Ah e tbm ela é max_heap por padrão, então a gente utiliza o greater para que ela vire min_heap, retornando o menor elemento
+
+
+        vector<int> dist(dataset.amountVertex + 1, INT_MAX);//Vetor que armazena as distancias
         vector<int> prev(dataset.amountVertex + 1, -1);
 
         dist[base] = 0;
-        dijkstra.push({0, base});
+        queue.push({0, base}); //Adiciona a base como elemento da PQ, além disso, a distãncia inicial é estabelecida como 0, justamente o valor de ir a si mesmo.
 
-        while(!dijkstra.empty())
+        while(!queue.empty())
         {
-            visitados++;
-            auto[d, u] = dijkstra.top();
-            dijkstra.pop();
 
-            if(d > dist[u]){continue;}
+            auto[d, u] = queue.top();//Para rodar no teu pc, tem que ta com mys, no MINGW tu troca para o .firs e .second
+                                    //Basicamente ele pega o pair do vetor e utiliza como base de comparação para a a distancia/tempo
 
-            if(u == accident)
-            {
+            queue.pop(); //deleta o elemento que está alocado na queue
+
+            if(d > dist[u]){continue;} //Comppara se o peso atual é maior que o peso que foi inserido anteriormente,se sim, pode continuar
+
+            if(u == accident) //Se u == acident, significa que chegamos no alvo
+    {                       // Para salvar em .csv
                 //cout << visitados << " Quantidade de passos\n";
 
                 vector<int> path;
@@ -85,16 +92,16 @@ class Dijkstra//Algoritmoo de busca minima
                 return dist[u];
             }
             
-            for(const auto& edge : AdjacencyList[u])
-            {
+            for(const auto& edge : AdjacencyList[u]) //Captura os elementos da struct Edges que estão presentes na posição u da adjacencyList
+            {                                          //Ou seja, ele pega os Edges.to que estão na posição do vetor da aresta atual
                 
-                if(edge.weight < 0){ continue;}
+                if(edge.weight < 0){ continue;} //Tratamento para arestas negativas
 
-                if(dist[u] + edge.weight < dist[edge.to])
+                if(dist[u] + edge.weight < dist[edge.to]) //Se a distancia atual + o peso da aresta que está sendo analisada for menor que a distancia do aresta atual
                 {
-                    dist[edge.to] = dist[u] + edge.weight;
-                    prev[edge.to] = u;
-                    dijkstra.push({dist[edge.to], edge.to});
+                    dist[edge.to] = dist[u] + edge.weight; //então a distancia atual vai ser igual a soma das arestas
+                    prev[edge.to] = u; //Salva o caminho da aresta para o visualizer
+                    queue.push({dist[edge.to], edge.to}); //adiciona o valor atual do peso da aresta e  melhor aresta
                 }
 
             }
@@ -103,7 +110,7 @@ class Dijkstra//Algoritmoo de busca minima
     };
 
 
-    int averageTimetoRescue()
+    int averageTimetoRescue() //Calcula o tempo médio de resgate partindo de cada vertice, para definir o melhor ponto para localizar a base
     {
         
         int bestVertexTime = INT_MAX;

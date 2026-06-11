@@ -4,8 +4,8 @@
 #include <climits>
 #include <random>
 #include <chrono>
+#include <iomanip>
 
-static const int INF = 1e9;
 
 class FloydWarshall
 {
@@ -32,7 +32,7 @@ public:
                 }
                 else
                 {
-                    pondMatrix[i][j] = INF;
+                    pondMatrix[i][j] = INT_MAX;
                 }
             }
         }
@@ -41,15 +41,16 @@ public:
             pondMatrix[e.from][e.to] = e.weight;
         }
     };
-    void floydWarshall()//Define a matriz ponderada
+    void floydWarshall()//Define a matriz ponderada, em cada loop ele tenta extrair o melhor caminho para ij, passando por k
     {
+        //complexidade de N3
         for(int k = 1; k <= dataSet.amountVertex; k++)
         {
             for(int i = 1; i<=dataSet.amountVertex; i++)
             {
                 for(int j = 1; j<=dataSet.amountVertex; j++)
-                {
-                    if(pondMatrix[i][k] != INF && pondMatrix[k][j] != INF && pondMatrix[i][k] + pondMatrix[k][j] < pondMatrix[i][j])
+                {   //ele compara para ver se a soma da linha coluna k + linha k coluna i, é menor que o valor da linha i coluna j;
+                    if(pondMatrix[i][k] != INT_MAX && pondMatrix[k][j] != INT_MAX && pondMatrix[i][k] + pondMatrix[k][j] < pondMatrix[i][j]) //Só soma se os caminhos existirem
                     {
                         pondMatrix[i][j] = pondMatrix[i][k] + pondMatrix[k][j];
                     }
@@ -60,27 +61,34 @@ public:
 
     void printMatrix()
     {
+        const int COL_WIDTH = 6;
+
+        
+        std::cout << std::string(COL_WIDTH, ' ');
+        for(int j = 1; j <= dataSet.amountVertex; j++)
+            std::cout << std::setw(COL_WIDTH) << j;
+        std::cout << "\n";
+
+        std::cout << std::string(COL_WIDTH * (dataSet.amountVertex + 1), '-') << "\n";
+
         for(int i = 1; i <= dataSet.amountVertex; i++)
         {
+            std::cout << std::setw(COL_WIDTH - 1) << i << "|";
+
             for(int j = 1; j <= dataSet.amountVertex; j++)
             {
-                if(pondMatrix[i][j] == INF)
-                {
-                    std::cout << "INF ";
-                }
+                if(pondMatrix[i][j] == INT_MAX)
+                    std::cout << std::setw(COL_WIDTH) << "INF";
                 else
-                {
-                    std::cout << pondMatrix[i][j] << " ";
-                }
+                    std::cout << std::setw(COL_WIDTH) << pondMatrix[i][j];
             }
-
             std::cout << "\n";
         }
-    };
-
+    }
     int baseAmbulanceDefiner() //Inutil no Dijkstra, talvez sirva para o Bellman-Ford
     {
-        long long routeSum = LLONG_MAX;
+        //Acho que coloquei como parametro do Bellman, se tu quiser pode remover e colocar na mão a partida
+        long long routeSum = INT_MAX;
         int bestVertex = 0;
         
         for(int i = 1; i <= dataSet.amountVertex; i++)
@@ -88,7 +96,11 @@ public:
             long long atualRoute = 0;
             for(int j = 1; j <= dataSet.amountVertex; j++)
             {
-                atualRoute += pondMatrix[i][j];
+                if(pondMatrix[i][j] != INT_MAX)
+                {
+                    atualRoute += pondMatrix[i][j];
+                }
+               
 
             }
             if(i == 1 || routeSum > atualRoute)
@@ -100,7 +112,7 @@ public:
         return bestVertex;
     }
     
-    void ambulanceObservatory()// vai printar quais das ambulancias que estão circulando, estão mais próximas do acidente
+    void ambulanceObservatory()// vai printar quais das ambulancias que estão circulando, estão mais próximas do acidente, de umma forma aleatória
     {
         
         std::uniform_int_distribution<int> dist(1, 20);
@@ -112,13 +124,13 @@ public:
             ambulanceFleet.push_back(randomAccident()); //Valores aleatorios de 1 a 20 (quantidade máxima de vertices)
         }
 
-        int BestDistance = INF;
+        int BestDistance = INT_MAX;
         int nearestAmbulance = 0;
         int distanceActual = 0;
         for(int k = 0; k < ambulanceFleet.size(); k++)
         {
             distanceActual = pondMatrix[ambulanceFleet[k]][accident];
-            if(BestDistance > distanceActual)
+            if(BestDistance > distanceActual && distanceActual >= 0 && distanceActual != INT_MAX) //Evite que haja temos infinitos e neegativos
             {
                 BestDistance = distanceActual;
                 nearestAmbulance = ambulanceFleet[k];

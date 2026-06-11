@@ -3,10 +3,21 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 import networkx as nx
 import os
+import pygame
+
 
 class Graph_Representation:
         
     def __init__(self):  
+        #Especial
+        pygame.mixer.init()
+        sound_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "somdeambulancia.wav")
+        if os.path.exists(sound_path):
+            pygame.mixer.music.load(sound_path)
+            pygame.mixer.music.play()
+        else:
+            print(f"Caminho do som não encontrado em: {sound_path}")
+        #
         plt.style.use("dark_background")
         self.fig, self.ax = plt.subplots(figsize=(12, 8))
         self.fig.patch.set_facecolor("#0d1117")
